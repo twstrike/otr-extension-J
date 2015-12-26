@@ -2,10 +2,12 @@
 
 This document describes the J extension to the Off-the-Record protocol. It is based on the Off-the-Record Messaging Protocol version 3, that can be found at https://otr.cypherpunks.ca/Protocol-v3-4.0.0.html. This document only describes the additions to that protocol. The J extension is also backwards compatible using the version negotitation component of OTR - if only one peer supports J, the negotiation will simply choose version 3 instead.
 
-The main changes in this extension is:
+The main goal of extension J is to update the protocol choices for OTR to more modern algorithms with larger security margins. The previous choices of DSA with 1024 bit keys and SHA-1 are at the end of 2015 becoming uncomfortably close to being possible to crack.
 
-- Enable Ed25519 long lived keys for signatures
-- Change the hash and HMAC algorithms from SHA-1 and SHA-256 with SHA-3 with 256 bits in the OTR and SMP protocol
+The main changes in this extension are to:
+
+- Replace DSA long lived keys for signatures with Ed25519.
+- Change the hash and HMAC algorithms from SHA-1 and SHA-256 into SHA-3 with 256 bits in the OTR and SMP protocol
 
 ## Wire protocol
 
@@ -29,12 +31,40 @@ Finally, the version of the SMP protocol described in this protocol will stay ve
 
 ## Representation of keys
 
-(fingerprints)
+The only valid public and private keys used for signing when using extension J is Ed25519 keys. A public key is 32 bytes and a private key is 64 bytes where the last 32 bytes are the same as the public key.
 
-## Various resolution mechanisms
+In the various places where serialization of the public key is necessary, the format looks like this:
+
+OTR public authentication Ed25519 key (PUBKEY):
+    Pubkey type (SHORT)
+        Ed25519 public keys have type 0x0003
+    keydata (DATA)
+        The data will always be 32 bytes, so using the DATA format is technically redundant, but should help keep the wire format simple
+
+A private key will sometimes be serialized in configuration files. The format for that will be the following, encoded as base64:
+
+OTR private authentication Ed25519 key (PRIVKEY):
+    Key type (SHORT)
+        Ed25519 private keys have type 0x0003
+    public keydata (DATA)
+        The data will always be 32 bytes
+    private keydata (DATA)
+        The data will always be 64 bytes. This format repeats the public key data twice - this is done to match the typical in-memory representation of keys
+
+A signature will always have this format:
+
+Ed25519 signature (SIG):
+    (len will always be 64 bytes, or 512 bits)
+    len byte unsigned data, big-endian
+
+Fingerprints for extension J keys will be calculated by taking the SHA-3 hash of the byte-level representation of the public key, extracting 256 bits of output. That means a fingerprint using extension J is 96 bits longer than version 3 fingerprints - user interfaces should keep this in mind.
 
 ## Hashes
 
 ## Hashes in SMP
+
+## Various resolution mechanisms
+
+(allowJ shouldn't happen if there is no ed25519 key available)
 
 ## Summary
