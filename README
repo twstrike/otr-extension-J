@@ -1,0 +1,3 @@
+# OTR Extension J
+
+This repository contiains the protocol description for the OTR extension protocol J. The only known implementation can be found in the 3x branch of the twstrike/otr3 repository.
