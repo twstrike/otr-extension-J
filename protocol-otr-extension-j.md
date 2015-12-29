@@ -27,6 +27,8 @@ to indicate willingness to talk using the J extension.
 
 In every message that includes a SHORT Protocol Version entry, this should be the unsigned short value 0xFE32 (the ASCII code for upper case J, added to 65000).
 
+The fragmentation format is the same as for OTR version 3. That means you can't tell the difference between a 3 and a J protocol message from the fragmented pieces - you will have to wait until after reassembly to finalize how to deal with a message.
+
 Finally, the version of the SMP protocol described in this protocol will stay version 1. That means that the SMP protocol version 1 inside of extension J is _not_ the same as SMP protocl version 1 inside of the OTR protocol version 2 or 3.
 
 ## Representation of keys
@@ -80,13 +82,26 @@ There are a number of places in OTR version 3 that uses SHA-1 or SHA2-256 in ord
 - In the Data message:
     - The Authenticator should be calcuated using SHA3-256-HMAC-160, instead of SHA1-HMAC - note the truncation to 160 bits. This is necessary to keep the wire format compatible with version 3.
 - Computing AES keys, MAC keys and the secure session ID:
-    - Redefine `h2()` to use SHA3-256 instead of SHA256
-  
-
+    - Redefine `h1()` to use SHA3-256 instead of SHA1.
+    - Redefine `h2()` to use SHA3-256 instead of SHA256.
+    - The sending and receiving MAC keys should be calculated to be the output of SHA3-256-160 instead of SHA1
+    
 ## Hashes in SMP
+
+There are a number of places in the SMP protocol that use hashes. These places should all be replaced with SHA3-256, as follows:
+
+- Creating the actual secret `x` or `y` should be done by taking the SHA3-256 hash of the material, not the SHA-256 hash.
+- The SMP Hash function should be SHA3-256 instead of SHA-256 for every place where the hash of one or two MPIs is required.
+- To calculate `c2` and `c3` use SHA3-256 instead of SHA-256.
+- To calculate `cP` use SHA3-256 instead of SHA-256.
+- To calculate `cR` use SHA3-256 instead of SHA-256.
 
 ## Various resolution mechanisms
 
-(allowJ shouldn't happen if there is no ed25519 key available)
+This extension adds a new policy flag called ALLOW_EXTENSION_J - this works exactly the same as the ALLOW_V2 and ALLOW_V3 policies. OTR is also only disabled if all four of the ALLOW_ flags are disabled.
 
-## Summary
+Extension J only supports Ed25519 keys - as such, it is not possible to use previously established DSA keys extension J communication. This presents a bootstrap problem for peers with many verified fingerprints. This protocol specification does not specify an automated solution for this problem, although it is practical to turn of extension J, send the new fingerprint information for the Ed25519 keys and then turn on extension J again.
+
+If extension J is implementated, it should take precedence over version 3 and version 2.
+
+A compliant implementation of this specification should not allow extension J to be negotiated if the current OTR peer does not have an Ed25519 key available. This case should be treated as if ALLOW_EXTENSION_J was set to false.
