@@ -46,19 +46,6 @@ OTR public authentication Ed25519 key (PUBKEY):
         redundant, but should help keep the wire format simple
 ```
 
-A private key will sometimes be serialized in configuration files. The format for that will be the following, encoded as base64:
-
-```
-OTR private authentication Ed25519 key (PRIVKEY):
-    Key type (SHORT)
-        Ed25519 private keys have type 0x0003
-    public keydata (DATA)
-        The data will always be 32 bytes
-    private keydata (DATA)
-        The data will always be 64 bytes. This format repeats the public key data
-        twice - this is done to match the typical in-memory representation of keys
-```
-
 A signature will always have this format:
 
 ```
@@ -100,8 +87,8 @@ There are a number of places in the SMP protocol that use hashes. These places s
 
 This extension adds a new policy flag called ALLOW_EXTENSION_J - this works exactly the same as the ALLOW_V2 and ALLOW_V3 policies. OTR is also only disabled if all four of the ALLOW_ flags are disabled.
 
-Extension J only supports Ed25519 keys - as such, it is not possible to use previously established DSA keys extension J communication. This presents a bootstrap problem for peers with many verified fingerprints. This protocol specification does not specify an automated solution for this problem, although it is practical to turn of extension J, send the new fingerprint information for the Ed25519 keys and then turn on extension J again.
+Extension J only supports Ed25519 keys - as such, it is not possible to use previously established DSA keys for extension J communication. This presents a bootstrap problem for peers with many verified fingerprints. This protocol specification does not specify an automated solution for this problem, although it is practical to turn off extension J, send the new fingerprint information for the Ed25519 keys and then turn on extension J again.
 
-If extension J is implementated, it should take precedence over version 3 and version 2.
+If extension J is implemented, it should take precedence over version 3 and version 2.
 
 A compliant implementation of this specification should not allow extension J to be negotiated if the current OTR peer does not have an Ed25519 key available. This case should be treated as if ALLOW_EXTENSION_J was set to false.
