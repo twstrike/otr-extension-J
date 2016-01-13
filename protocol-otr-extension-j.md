@@ -51,7 +51,7 @@ A signature will always have this format:
 ```
 Ed25519 signature (SIG):
     (len will always be 64 bytes, or 512 bits)
-    len byte unsigned data, big-endian
+    len byte unsigned data, little-endian
 ```
 
 Fingerprints for extension J keys will be calculated by taking the SHA3-256 hash of the byte-level representation of the public key. That means a fingerprint using extension J is 96 bits longer than version 3 fingerprints - user interfaces should keep this in mind.
@@ -62,16 +62,19 @@ There are a number of places in OTR version 3 that uses SHA-1 or SHA2-256 in ord
 
 - In the Authenticated Key Exchange:
     - In the D-H Commit Message, the hashed `g^x` parameter should be the SHA3-256 hash of the `gxmpi`, not the SHA-256 hash.
-    - In the Reveal Signature Message, the `MB` parameter should be computed using a SHA3-256-HMAC instead of a SHA256-HMAC
-    - In the Reveal Signature Message, the MAC'd signature should be the SHA3-256-HMAC-160 of the encrypted signature field, not the SHA256-HMAC-160.
-    - In the Signature Message, the `MA` parameter should be computed using a SHA3-256-HMAC instead of a SHA256-HMAC
-    - In the Signature Message, the MAC'd signature should be the SHA3-256-HMAC-160 of the encrypted signature field, not the SHA256-HMAC-160.
+    - In the Reveal Signature Message, the `MB` parameter should be computed using SHA3-256(K||M) instead of SHA256-HMAC
+    - In the Reveal Signature Message, the MAC'd signature should be computed using SHA3-256(K||M) instead of SHA256-HMAC-160.
+    - In the Signature Message, the `MA` parameter should be computed using SHA3-256(K||M) instead of SHA256-HMAC
+    - In the Signature Message, the MAC'd signature should be be computed using SHA3-256(K||M) of the encrypted signature field, not SHA256-HMAC-160.
 - In the Data message:
-    - The Authenticator should be calcuated using SHA3-256-HMAC-160, instead of SHA1-HMAC - note the truncation to 160 bits. This is necessary to keep the wire format compatible with version 3.
+    - The Authenticator should be calcuated using SHA3-256(K||M), instead of SHA1-HMAC.
 - Computing AES keys, MAC keys and the secure session ID:
     - Redefine `h1()` to use SHA3-256 instead of SHA1.
     - Redefine `h2()` to use SHA3-256 instead of SHA256.
-    - The sending and receiving MAC keys should be calculated to be the output of SHA3-256-160 instead of SHA1
+    - The sending and receiving MAC keys should be calculated to be the output of SHA3-256 instead of SHA1
+- When revealing MAC keys
+    - Instead of revealing MAC keys by concatenating 20 byte values, concatenate 32 byte values (since the MAC key will be longer using extension J).
+
     
 ## Hashes in SMP
 
@@ -91,4 +94,3 @@ Extension J only supports Ed25519 keys - as such, it is not possible to use prev
 
 If extension J is implemented, it should take precedence over version 3 and version 2.
 
-A compliant implementation of this specification should not allow extension J to be negotiated if the current OTR peer does not have an Ed25519 key available. This case should be treated as if ALLOW_EXTENSION_J was set to false.
