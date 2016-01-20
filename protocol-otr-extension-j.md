@@ -1,6 +1,6 @@
 # Off-the-Record Messaging Protocol extension J
 
-This document describes the J extension to the Off-the-Record protocol. It is based on the Off-the-Record Messaging Protocol version 3, that can be found at https://otr.cypherpunks.ca/Protocol-v3-4.0.0.html. This document only describes the additions to that protocol. The J extension is also backwards compatible using the version negotitation component of OTR - if only one peer supports J, the negotiation will simply choose version 3 instead.
+This document describes the J extension to the Off-the-Record protocol. It is based on the Off-the-Record Messaging Protocol version 3, that can be found at https://otr.cypherpunks.ca/Protocol-v3-4.0.0.html. This document only describes the additions to that protocol. The J extension is also backwards compatible using the version negotiation component of OTR - if only one peer supports J, the negotiation will simply choose version 3 instead.
 
 The main goal of extension J is to update the protocol choices for OTR to more modern algorithms with larger security margins. The previous choices of DSA with 1024 bit keys and SHA-1 are at the end of 2015 becoming uncomfortably close to being possible to crack.
 
@@ -29,7 +29,7 @@ In every message that includes a SHORT Protocol Version entry, this should be th
 
 The fragmentation format is the same as for OTR version 3. That means you can't tell the difference between a 3 and a J protocol message from the fragmented pieces - you will have to wait until after reassembly to finalize how to deal with a message.
 
-Finally, the version of the SMP protocol described in this protocol will stay version 1. That means that the SMP protocol version 1 inside of extension J is _not_ the same as SMP protocl version 1 inside of the OTR protocol version 2 or 3.
+Finally, the version of the SMP protocol described in this protocol will stay version 1. That means that the SMP protocol version 1 inside of extension J is _not_ the same as SMP protocol version 1 inside of the OTR protocol version 2 or 3.
 
 ## Representation of keys
 
@@ -67,7 +67,7 @@ There are a number of places in OTR version 3 that uses SHA-1 or SHA2-256 in ord
     - In the Signature Message, the `MA` parameter should be computed using SHA3-256(K||M) instead of SHA256-HMAC
     - In the Signature Message, the MAC'd signature should be be computed using SHA3-256(K||M) of the encrypted signature field, not SHA256-HMAC-160.
 - In the Data message:
-    - The Authenticator should be calcuated using SHA3-256(K||M), instead of SHA1-HMAC.
+    - The Authenticator should be calculated using SHA3-256(K||M), instead of SHA1-HMAC.
 - Computing AES keys, MAC keys and the secure session ID:
     - Redefine `h1()` to use SHA3-256 instead of SHA1.
     - Redefine `h2()` to use SHA3-256 instead of SHA256.
@@ -75,7 +75,7 @@ There are a number of places in OTR version 3 that uses SHA-1 or SHA2-256 in ord
 - When revealing MAC keys
     - Instead of revealing MAC keys by concatenating 20 byte values, concatenate 32 byte values (since the MAC key will be longer using extension J).
 
-    
+
 ## Hashes in SMP
 
 There are a number of places in the SMP protocol that use hashes. These places should all be replaced with SHA3-256, as follows:
