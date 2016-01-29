@@ -9,9 +9,11 @@ The main changes in this extension are to:
 - Replace DSA long lived keys for signatures with Ed25519.
 - Change the hash and HMAC algorithms from SHA-1 and SHA-256 into SHA3-256 in the OTR and SMP protocol
 
+The main purpose of this extension is to switch out only the algorithms that potentially can become problematic soon. As such, it does not switch out the Diffie-Hellman key exchange from the OTR protocol.
+
 ## Wire protocol
 
-The J extension has a wire protocol that is completely compatible with previous versions of the OTR protocol. What that means is that previous correct implementations of OTR will be able to receive J extension messages and understand them well enough to avoid crashes. The biggest differences are in the representation of the new extension version in the various messages.
+The J extension has a wire protocol that is similar to version 3. The biggest differences are in the representation of the new extension version in the various messages.
 
 In the Query message it is now possible to use the letter J in addition with the other characters specified in the protocol, such that:
 
@@ -90,7 +92,7 @@ There are a number of places in the SMP protocol that use hashes. These places s
 
 This extension adds a new policy flag called ALLOW_EXTENSION_J - this works exactly the same as the ALLOW_V2 and ALLOW_V3 policies. OTR is also only disabled if all four of the ALLOW_ flags are disabled.
 
-Extension J only supports Ed25519 keys - as such, it is not possible to use previously established DSA keys for extension J communication. This presents a bootstrap problem for peers with many verified fingerprints. This protocol specification does not specify an automated solution for this problem, although it is practical to turn off extension J, send the new fingerprint information for the Ed25519 keys and then turn on extension J again.
+Extension J only supports Ed25519 keys - as such, it is not possible to use previously established DSA keys for extension J communication. This presents a bootstrap problem for peers with many verified fingerprints. This protocol specification does not specify an automated solution for this problem, although it is practical to turn off extension J, send the new fingerprint information for the Ed25519 keys over an already authenticated version 3 channel, and then turn on extension J again.
 
 If extension J is implemented, it should take precedence over version 3 and version 2.
 
